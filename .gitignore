@@ -1,0 +1,15 @@
+# Windows
+Thumbs.db
+desktop.ini
+*.lnk
+
+# Editors
+.vscode/
+.idea/
+*.swp
+
+# Local scratch / backups
+*.local.html
+*.bak
+גיבוי-משימות-*.json
+משימות_פתוחות.doc

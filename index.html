@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#1f4e78">
+<meta name="description" content="יומן משימות אישי - ניהול משימות עבודה ובית">
+<script id="task-data" type="application/json">{"tasks":[]}</script>
+<title>יומן משימות אישי</title>
+<style>
+:root{color-scheme:light}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4f8;color:#111;padding:12px;font-size:13px}
+.header{background:linear-gradient(135deg,#1f4e78,#2563eb);color:white;border-radius:10px;padding:14px 16px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.header-text h1{font-size:17px;font-weight:700;margin-bottom:2px}
+.header-text p{font-size:11px;opacity:.8}
+.header-btns{display:flex;gap:6px;flex-shrink:0;align-items:center}
+.hbtn{display:flex;align-items:center;gap:5px;padding:7px 13px;background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.4);border-radius:8px;color:white;font-size:12px;font-family:inherit;font-weight:700;cursor:pointer;transition:all .15s;white-space:nowrap}
+.hbtn:hover{background:rgba(255,255,255,.25);border-color:white}
+.hbtn.saved{background:rgba(16,185,129,.35);border-color:#6ee7b7}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(16px);background:#1f4e78;color:white;padding:10px 22px;border-radius:10px;font-size:13px;font-weight:600;opacity:0;transition:all .3s;z-index:9999;pointer-events:none;box-shadow:0 4px 16px rgba(0,0,0,.25)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.file-bar{background:#e0f2fe;border:1px solid #bae6fd;border-radius:8px;padding:7px 12px;margin-bottom:10px;font-size:11px;color:#0369a1;display:flex;align-items:center;gap:6px}
+.file-bar.warn{background:#fef9c3;border-color:#fde047;color:#854d0e}
+.file-bar.ok{background:#dcfce7;border-color:#86efac;color:#166534}
+.file-bar.hide{display:none}
+.add-box{background:white;border-radius:10px;padding:10px 12px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.07)}
+.add-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.dropdown-wrap{position:relative;display:inline-block}
+.dropdown-btn{display:flex;align-items:center;gap:6px;padding:7px 12px;background:#f9fafb;border:1.5px solid #e5e7eb;border-radius:8px;font-size:12px;font-family:inherit;font-weight:600;color:#374151;cursor:pointer;transition:all .15s;white-space:nowrap}
+.dropdown-btn:hover{border-color:#93c5fd;background:#eff6ff}
+.dropdown-btn .arrow{font-size:9px;color:#9ca3af;transition:transform .15s}
+.dropdown-btn.open .arrow{transform:rotate(180deg)}
+.dropdown-menu{display:none;position:absolute;top:calc(100% + 4px);right:0;background:white;border:1px solid #e5e7eb;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.1);z-index:100;min-width:130px;overflow:hidden}
+.dropdown-menu.open{display:block}
+.dd-item{display:flex;align-items:center;gap:8px;padding:9px 14px;font-size:12px;font-family:inherit;font-weight:600;cursor:pointer;background:none;border:none;width:100%;text-align:right;color:#374151;transition:background .1s}
+.dd-item:hover{background:#f3f4f6}
+.dd-item.active-work{color:#1e40af;background:#eff6ff}
+.dd-item.active-home{color:#92400e;background:#fffbeb}
+.dd-item.active-sub{color:#5b21b6;background:#f5f3ff}
+.dd-item.active-due{color:#1e40af;background:#eff6ff}
+.dd-date-wrap{padding:8px 10px;border-top:1px solid #f3f4f6}
+.dd-date-wrap input[type="date"]{width:100%;padding:5px 8px;border:1.5px solid #e5e7eb;border-radius:6px;font-size:12px;font-family:inherit;outline:none;color:#111}
+.add-row input[type="text"]{flex:1;min-width:120px;padding:8px 12px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:13px;font-family:inherit;background:#f9fafb;color:#111;outline:none;transition:border-color .15s}
+.add-row input[type="text"]:focus{border-color:#2563eb;background:white}
+.add-row input[type="text"]::placeholder{color:#9ca3af}
+.add-btn{padding:8px 16px;background:#2563eb;color:white;border:none;border-radius:8px;font-size:13px;font-family:inherit;font-weight:600;cursor:pointer;white-space:nowrap;transition:background .15s}
+.add-btn:hover{background:#1d4ed8}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px}
+.stat{background:white;border-radius:8px;padding:10px 6px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.07)}
+.stat-value{font-size:24px;font-weight:800;color:#1f4e78}
+.stat-value.red{color:#dc2626}
+.stat-value.amber{color:#d97706}
+.stat-value.purple{color:#7c3aed}
+.stat-label{font-size:10px;color:#6b7280;margin-top:2px}
+.filters{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px}
+.fb{background:white;color:#374151;border:1px solid #e5e7eb;border-radius:20px;padding:4px 12px;font-size:11px;cursor:pointer;font-family:inherit}
+.fb:hover{background:#f3f4f6}
+.fb.active{background:#1f4e78;color:white;border-color:#1f4e78}
+.tasks{display:flex;flex-direction:column;gap:6px}
+.task{background:white;border-radius:8px;padding:10px 12px;box-shadow:0 1px 3px rgba(0,0,0,.06);border-right:3px solid #e5e7eb}
+.task.open{border-right-color:#3b82f6}
+.task.progress{border-right-color:#f59e0b}
+.task.done{border-right-color:#10b981;opacity:.6}
+.task.overdue{border-right-color:#ef4444;background:#fef2f2}
+.task-top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.task-desc{font-size:13px;font-weight:500;line-height:1.4;flex:1;cursor:pointer;padding:2px 4px;border-radius:5px;transition:background .12s}
+.task-desc:hover{background:#eff6ff;color:#1d4ed8}
+.task.done .task-desc{text-decoration:line-through;color:#6b7280}
+.task-actions{display:flex;gap:5px;flex-shrink:0}
+.done-btn{padding:4px 10px;background:#f0fdf4;color:#16a34a;border:1.5px solid #bbf7d0;border-radius:6px;font-size:11px;font-family:inherit;font-weight:700;cursor:pointer;transition:all .15s;white-space:nowrap}
+.done-btn:hover{background:#16a34a;color:white;border-color:#16a34a}
+.delete-btn{padding:4px 8px;background:#fff5f5;color:#dc2626;border:1.5px solid #fecaca;border-radius:6px;font-size:12px;font-family:inherit;cursor:pointer;transition:all .15s}
+.delete-btn:hover{background:#dc2626;color:white;border-color:#dc2626}
+.badges{display:flex;gap:4px;flex-wrap:wrap;margin-top:5px}
+.badge{font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px}
+.badge.cat-work{background:#dbeafe;color:#1e40af}
+.badge.cat-home{background:#fef3c7;color:#92400e}
+.badge.sub{background:#f5f3ff;color:#5b21b6}
+.badge.status-open{background:#fee2e2;color:#991b1b}
+.badge.status-progress{background:#fef3c7;color:#92400e}
+.badge.status-done{background:#d1fae5;color:#065f46}
+.badge.status-cancel{background:#f3f4f6;color:#6b7280}
+.badge.due-overdue{background:#fee2e2;color:#dc2626}
+.badge.due-today{background:#fef9c3;color:#92400e}
+.badge.due-future{background:#f3f4f6;color:#374151}
+.badge.consult{background:#ede9fe;color:#5b21b6}
+.empty{text-align:center;padding:30px 20px;color:#9ca3af}
+.empty-icon{font-size:36px;margin-bottom:8px}
+.footer-bar{text-align:center;font-size:10px;color:#9ca3af;margin-top:8px}
+.confirm-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:999;align-items:center;justify-content:center}
+.confirm-overlay.open{display:flex}
+.confirm-box{background:white;border-radius:12px;padding:20px 24px;box-shadow:0 8px 30px rgba(0,0,0,.2);max-width:280px;width:90%;text-align:center}
+.confirm-box p{font-size:14px;font-weight:600;margin-bottom:6px}
+.confirm-box small{font-size:12px;color:#6b7280;display:block;margin-bottom:16px}
+.confirm-actions{display:flex;gap:8px;justify-content:center}
+.confirm-yes{padding:7px 20px;background:#dc2626;color:white;border:none;border-radius:7px;font-size:13px;font-family:inherit;font-weight:700;cursor:pointer}
+.confirm-yes:hover{background:#b91c1c}
+.confirm-no{padding:7px 20px;background:#f3f4f6;color:#374151;border:none;border-radius:7px;font-size:13px;font-family:inherit;font-weight:600;cursor:pointer}
+.confirm-no:hover{background:#e5e7eb}
+.edit-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:1000;align-items:flex-start;justify-content:center;padding-top:40px}
+.edit-overlay.open{display:flex}
+.edit-modal{background:white;border-radius:14px;padding:22px 24px;box-shadow:0 12px 40px rgba(0,0,0,.25);width:92%;max-width:420px;max-height:85vh;overflow-y:auto}
+.edit-modal h2{font-size:15px;font-weight:700;color:#1f4e78;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.edit-field{margin-bottom:14px}
+.edit-field label{display:block;font-size:11px;font-weight:600;color:#6b7280;margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em}
+.edit-field input[type="text"],.edit-field input[type="date"],.edit-field select{width:100%;padding:9px 12px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:13px;font-family:inherit;color:#111;background:#f9fafb;outline:none;transition:border-color .15s}
+.edit-field input:focus,.edit-field select:focus{border-color:#2563eb;background:white}
+.edit-field .radio-row{display:flex;gap:8px;flex-wrap:wrap}
+.radio-chip{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border:1.5px solid #e5e7eb;border-radius:20px;cursor:pointer;font-size:12px;font-weight:600;color:#374151;transition:all .15s;user-select:none}
+.radio-chip:hover{border-color:#93c5fd;background:#eff6ff}
+.radio-chip.sel-work{border-color:#2563eb;background:#eff6ff;color:#1e40af}
+.radio-chip.sel-home{border-color:#d97706;background:#fffbeb;color:#92400e}
+.radio-chip.sel-open{border-color:#ef4444;background:#fef2f2;color:#991b1b}
+.radio-chip.sel-progress{border-color:#f59e0b;background:#fef3c7;color:#92400e}
+.radio-chip.sel-done{border-color:#10b981;background:#f0fdf4;color:#065f46}
+.radio-chip.sel-cancel{border-color:#9ca3af;background:#f3f4f6;color:#6b7280}
+.radio-chip.sel-yes{border-color:#7c3aed;background:#f5f3ff;color:#5b21b6}
+.radio-chip.sel-no{border-color:#e5e7eb;background:#f9fafb;color:#374151}
+.edit-actions{display:flex;gap:8px;margin-top:20px}
+.edit-save{flex:1;padding:10px;background:#2563eb;color:white;border:none;border-radius:8px;font-size:13px;font-family:inherit;font-weight:700;cursor:pointer;transition:background .15s}
+.edit-save:hover{background:#1d4ed8}
+.edit-cancel{padding:10px 16px;background:#f3f4f6;color:#374151;border:none;border-radius:8px;font-size:13px;font-family:inherit;font-weight:600;cursor:pointer}
+.edit-cancel:hover{background:#e5e7eb}
+.done-btn.reopen{background:#f8fafc;color:#475569;border-color:#cbd5e1}
+.done-btn.reopen:hover{background:#475569;color:white;border-color:#475569}
+@media(max-width:640px){
+  body{padding:8px}
+  .header{flex-direction:column;align-items:stretch;gap:10px}
+  .header-btns{flex-wrap:wrap;justify-content:flex-start}
+  .hbtn{flex:1 1 auto;justify-content:center}
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .stat-value{font-size:20px}
+  .add-row input[type="text"]{flex:1 1 100%;min-width:0;order:10}
+  .add-btn{flex:1 1 100%;order:11}
+  .dropdown-wrap{flex:1 1 auto}
+  .dropdown-btn{width:100%;justify-content:space-between}
+  .dropdown-menu{right:auto;left:0;min-width:100%}
+  .task-actions{flex-direction:column}
+  .edit-overlay{padding-top:12px}
+}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="header-text">
+    <h1>📋 יומן משימות אישי</h1>
+    <p id="last-update">טוען...</p>
+  </div>
+  <div class="header-btns">
+    <button class="hbtn" onclick="exportWord()">📤 יצוא Word</button>
+    <button class="hbtn" onclick="backupJSON()">🗄 גיבוי</button>
+    <button class="hbtn" onclick="document.getElementById('restore-file').click()">📂 שחזור</button>
+    <button class="hbtn" id="save-btn" onclick="saveToFile()">💾 שמור</button>
+    <input type="file" id="restore-file" accept=".json,application/json" style="display:none" onchange="restoreJSON(event)"/>
+  </div>
+</div>
+<div class="file-bar hide" id="file-bar"></div>
+<div class="add-box">
+  <div class="add-row">
+    <div class="dropdown-wrap">
+      <button class="dropdown-btn" id="dd-btn-cat" onclick="toggleDD('cat')">
+        <span id="dd-label-cat">💼 עבודה</span><span class="arrow">▼</span>
+      </button>
+      <div class="dropdown-menu" id="dd-menu-cat">
+        <button class="dd-item active-work" id="dd-work" onclick="selectCat('עבודה')">💼 עבודה</button>
+        <button class="dd-item" id="dd-home" onclick="selectCat('בית')">🏠 בית</button>
+      </div>
+    </div>
+    <div class="dropdown-wrap">
+      <button class="dropdown-btn" id="dd-btn-sub" onclick="toggleDD('sub')">
+        <span id="dd-label-sub">🏢 הנהלה</span><span class="arrow">▼</span>
+      </button>
+      <div class="dropdown-menu" id="dd-menu-sub"></div>
+    </div>
+    <div class="dropdown-wrap">
+      <button class="dropdown-btn" id="dd-btn-due" onclick="toggleDD('due')">
+        <span id="dd-label-due">📅 מועד</span><span class="arrow">▼</span>
+      </button>
+      <div class="dropdown-menu" id="dd-menu-due">
+        <button class="dd-item" id="dd-today-opt" onclick="selectDue('today')">☀️ היום</button>
+        <button class="dd-item" id="dd-tomorrow-opt" onclick="selectDue('tomorrow')">🌅 מחר</button>
+        <button class="dd-item" id="dd-week-opt" onclick="selectDue('week')">📆 עוד שבוע</button>
+        <button class="dd-item" id="dd-custom-opt" onclick="selectDue('custom')">🗓 תאריך מדויק</button>
+        <div class="dd-date-wrap" id="dd-date-picker" style="display:none">
+          <input type="date" id="custom-date" onchange="applyCustomDate()"/>
+        </div>
+      </div>
+    </div>
+    <input type="text" id="new-task-input" placeholder="תיאור המשימה החדשה..."/>
+    <button class="add-btn" onclick="addTask()">+ הוסף משימה</button>
+  </div>
+</div>
+<div class="stats">
+  <div class="stat"><div class="stat-value" id="s-open">0</div><div class="stat-label">פתוחות</div></div>
+  <div class="stat"><div class="stat-value amber" id="s-today">0</div><div class="stat-label">להיום</div></div>
+  <div class="stat"><div class="stat-value red" id="s-over">0</div><div class="stat-label">עבר זמנן</div></div>
+  <div class="stat"><div class="stat-value purple" id="s-cons">0</div><div class="stat-label">להתייעצות</div></div>
+</div>
+<div class="filters">
+  <button class="fb active" data-f="open" onclick="setF('open')">פתוחות</button>
+  <button class="fb" data-f="today" onclick="setF('today')">היום</button>
+  <button class="fb" data-f="overdue" onclick="setF('overdue')">עבר זמנן</button>
+  <button class="fb" data-f="עבודה" onclick="setF('עבודה')">עבודה</button>
+  <button class="fb" data-f="בית" onclick="setF('בית')">בית</button>
+  <button class="fb" data-f="consult" onclick="setF('consult')">התייעצות</button>
+  <button class="fb" data-f="all" onclick="setF('all')">הכל</button>
+</div>
+<div class="tasks" id="task-list"></div>
+<div class="footer-bar" id="footer"></div>
+<div id="toast" class="toast"></div>
+<div class="confirm-overlay" id="confirm-overlay">
+  <div class="confirm-box">
+    <p>למחוק את המשימה?</p>
+    <small id="confirm-desc"></small>
+    <div class="confirm-actions">
+      <button class="confirm-yes" onclick="confirmDelete()">🗑 מחק</button>
+      <button class="confirm-no" onclick="cancelDelete()">ביטול</button>
+    </div>
+  </div>
+</div>
+<div class="edit-overlay" id="edit-overlay" onclick="overlayClick(event)">
+  <div class="edit-modal" id="edit-modal">
+    <h2>✏️ עריכת משימה</h2>
+    <div class="edit-field"><label>תיאור</label><input type="text" id="e-desc" placeholder="תיאור המשימה..."/></div>
+    <div class="edit-field"><label>קטגוריה</label><div class="radio-row" id="e-cat-row"><span class="radio-chip" data-cat="עבודה" onclick="editSelectCat('עבודה')">💼 עבודה</span><span class="radio-chip" data-cat="בית" onclick="editSelectCat('בית')">🏠 בית</span></div></div>
+    <div class="edit-field"><label>תת-קטגוריה</label><select id="e-sub"></select></div>
+    <div class="edit-field"><label>סטטוס</label><div class="radio-row"><span class="radio-chip" data-st="פתוחה" onclick="editSelectStatus('פתוחה')">🔵 פתוחה</span><span class="radio-chip" data-st="בתהליך" onclick="editSelectStatus('בתהליך')">🟡 בתהליך</span><span class="radio-chip" data-st="הושלמה" onclick="editSelectStatus('הושלמה')">🟢 הושלמה</span><span class="radio-chip" data-st="בוטלה" onclick="editSelectStatus('בוטלה')">⚫ בוטלה</span></div></div>
+    <div class="edit-field"><label>תאריך יעד</label><input type="date" id="e-due"/></div>
+    <div class="edit-field"><label>דרושה התייעצות?</label><div class="radio-row"><span class="radio-chip" data-con="כן" onclick="editSelectConsult('כן')">💬 כן</span><span class="radio-chip" data-con="לא" onclick="editSelectConsult('לא')">✖ לא</span></div></div>
+    <div class="edit-actions"><button class="edit-cancel" onclick="closeEdit()">ביטול</button><button class="edit-save" onclick="saveEdit()">💾 שמור שינויים</button></div>
+  </div>
+</div>
+<script>
+var state={tasks:[]},currentF='open',selectedCat='עבודה',selectedSub='הנהלה',selectedDue=null,pendingDeleteId=null,editingId=null,editCat='עבודה',editStatus='פתוחה',editConsult='לא';
+var SUB_OPTIONS={'עבודה':[{label:'🏢 הנהלה',value:'הנהלה'},{label:'⚙️ תפעול',value:'תפעול'},{label:'📣 שיווק',value:'שיווק'}],'בית':[{label:'🏠 כללי',value:'כללי'},{label:'🎨 תחביבים',value:'תחביבים'}]};
+function persist(){try{localStorage.setItem('taskJournal',JSON.stringify(state))}catch(e){}}
+function toISO(d){var m=d.getMonth()+1,day=d.getDate();return d.getFullYear()+'-'+(m<10?'0':'')+m+'-'+(day<10?'0':'')+day}
+function getToday(){return toISO(new Date())}
+function addDays(n){var d=new Date();d.setDate(d.getDate()+n);return toISO(d)}
+function esc(s){var d=document.createElement('div');d.textContent=String(s);return d.innerHTML}
+function fmtDate(s){if(!s)return'ללא תאריך';var p=s.split('-');return p[2]+'/'+p[1]+'/'+p[0]}
+function fmtDateShort(s){if(!s)return'—';var p=s.split('-');return p[2]+'/'+p[1]}
+function genId(){return Date.now().toString(36)}
+function fmtNow(){var d=new Date();return d.toLocaleDateString('he-IL',{year:'numeric',month:'long',day:'numeric'})}
+function showToast(msg,isErr){var t=document.getElementById('toast');t.textContent=msg;t.style.background=isErr?'#dc2626':'#1f4e78';t.className='toast show';clearTimeout(t._timer);t._timer=setTimeout(function(){t.className='toast'},3500)}
+function setFileBar(msg,type){var bar=document.getElementById('file-bar');var icon=type==='ok'?'✅ ':type==='warn'?'⚠️ ':'📁 ';bar.textContent=icon+msg;bar.className='file-bar'+(type==='warn'?' warn':type==='ok'?' ok':'')}
+
+function loadTasks(){
+  try{
+    var ls=localStorage.getItem('taskJournal');
+    if(ls){
+      var p=JSON.parse(ls);
+      if(p&&Array.isArray(p.tasks)){
+        state=p;
+        document.getElementById('last-update').textContent='נטען מזיכרון · '+state.tasks.length+' משימות';
+        setFileBar('מחובר: זיכרון מקומי','ok');
+        updateStats();render();return;
+      }
+    }
+  }catch(e){}
+  loadEmbedded();
+  setFileBar(state.tasks.length?'נטענו נתוני ברירת מחדל':'הנתונים נשמרים בדפדפן של המכשיר הזה · מומלץ ללחוץ 🗄 גיבוי מדי פעם','');
+}
+
+function loadEmbedded(){
+  try{var raw=document.getElementById('task-data').textContent.trim();var p=raw?JSON.parse(raw):{tasks:[]};state=(p&&Array.isArray(p.tasks))?p:{tasks:[]}}catch(e){state={tasks:[]}}
+  var meta=document.getElementById('task-data').getAttribute('data-updated');
+  document.getElementById('last-update').textContent=meta?'snapshot: '+meta:(state.tasks.length?state.tasks.length+' משימות':'רשימה חדשה · הוסיפו משימה ראשונה');
+  updateStats();render();
+}
+
+async function saveToFile(){
+  var btn=document.getElementById('save-btn');btn.className='hbtn';btn.textContent='⏳';
+  try{
+    var json=JSON.stringify(state);
+    localStorage.setItem('taskJournal',json);
+    document.getElementById('last-update').textContent='נשמר: '+new Date().toLocaleTimeString('he-IL');
+    setFileBar('נשמר · '+state.tasks.length+' משימות','ok');
+    btn.className='hbtn saved';btn.textContent='✅ נשמר';
+    setTimeout(function(){btn.className='hbtn';btn.textContent='💾 שמור'},2500);
+    showToast('✅ נשמר בהצלחה');
+  }catch(e){btn.className='hbtn';btn.textContent='💾 שמור';showToast('שגיאה: '+e.message,true)}
+}
+
+function getOpenTasks(){return state.tasks.filter(function(t){return t.status!=='הושלמה'&&t.status!=='בוטלה'}).sort(function(a,b){return(a.due||'9999').localeCompare(b.due||'9999')})}
+function buildExportHTML(){
+  var tasks=getOpenTasks(),today=getToday(),dateStr=fmtNow();
+  var rows=tasks.map(function(t,i){var isOver=t.due&&t.due<today;var dueSt=isOver?'color:#dc2626;font-weight:bold':'';var sc={'פתוחה':'#1d4ed8','בתהליך':'#d97706','הושלמה':'#16a34a','בוטלה':'#6b7280'}[t.status]||'#111';var bg=i%2===0?'#fff':'#f8fafc';return'<tr style="background:'+bg+'"><td style="padding:9px 14px;border-bottom:1px solid #e5e7eb;font-weight:600;font-size:13px">'+esc(t.description)+'</td><td style="padding:9px 14px;border-bottom:1px solid #e5e7eb;font-size:12px;color:#374151">'+esc(t.category)+(t.subcategory?' / '+esc(t.subcategory):'')+'</td><td style="padding:9px 14px;border-bottom:1px solid #e5e7eb;font-size:12px;color:'+sc+'">'+esc(t.status)+'</td><td style="padding:9px 14px;border-bottom:1px solid #e5e7eb;font-size:12px;'+dueSt+'">'+(t.due?fmtDate(t.due):'—')+'</td><td style="padding:9px 14px;border-bottom:1px solid #e5e7eb;font-size:12px;color:#7c3aed">'+(t.consult==='כן'?'✔ כן':'')+'</td></tr>'}).join('');
+  var overdue=tasks.filter(function(t){return t.due&&t.due<today}).length,noDate=tasks.filter(function(t){return!t.due}).length;
+  return'﻿<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom><w:DoNotOptimizeForBrowser/></w:WordDocument></xml><style>body{font-family:Arial,sans-serif;direction:rtl;color:#111;margin:32px 40px;font-size:13px}h1{font-size:22px;font-weight:700;color:#1f4e78;margin-bottom:4px}.meta{font-size:12px;color:#6b7280;margin-bottom:24px;border-bottom:2px solid #2563eb;padding-bottom:12px}table{width:100%;border-collapse:collapse;margin-top:8px}thead tr{background:#1f4e78}th{padding:10px 14px;text-align:right;color:white;font-size:12px;font-weight:600}</style></head><body><h1>📋 משימות פתוחות</h1><div class="meta">הופק: '+dateStr+' | סה"כ '+tasks.length+' משימות</div><table><thead><tr><th>משימה</th><th>קטגוריה</th><th>סטטוס</th><th>תאריך יעד</th><th>התייעצות</th></tr></thead><tbody>'+rows+'</tbody></table></body></html>';
+}
+function exportWord(){
+  try{
+    var blob=new Blob([buildExportHTML()],{type:'application/msword;charset=utf-8'});
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement('a');a.href=url;a.download='משימות_פתוחות.doc';a.click();
+    URL.revokeObjectURL(url);
+    showToast('📥 הקובץ הורד');
+  }catch(e){showToast('שגיאה ביצוא: '+e.message,true)}
+}
+
+function buildSubMenu(cat,activeSub){document.getElementById('dd-menu-sub').innerHTML=(SUB_OPTIONS[cat]||[]).map(function(o){return'<button class="dd-item'+(o.value===activeSub?' active-sub':'')+'" onclick="selectSub(\''+o.value+'\',\''+o.label+'\')">'+o.label+'</button>'}).join('')}
+function selectSub(val,label){selectedSub=val;document.getElementById('dd-label-sub').textContent=label;buildSubMenu(selectedCat,val);closeAllDD();document.getElementById('new-task-input').focus()}
+var DD_IDS=['cat','sub','due'];
+function toggleDD(w){DD_IDS.forEach(function(x){if(x!==w){document.getElementById('dd-btn-'+x).classList.remove('open');document.getElementById('dd-menu-'+x).classList.remove('open')}});document.getElementById('dd-btn-'+w).classList.toggle('open');document.getElementById('dd-menu-'+w).classList.toggle('open')}
+function closeAllDD(){DD_IDS.forEach(function(w){document.getElementById('dd-btn-'+w).classList.remove('open');document.getElementById('dd-menu-'+w).classList.remove('open')})}
+document.addEventListener('click',function(e){var inside=DD_IDS.some(function(w){var b=document.getElementById('dd-btn-'+w),m=document.getElementById('dd-menu-'+w);return(b&&b.contains(e.target))||(m&&m.contains(e.target))});if(!inside)closeAllDD()});
+function selectCat(cat){selectedCat=cat;document.getElementById('dd-label-cat').textContent=cat==='עבודה'?'💼 עבודה':'🏠 בית';document.getElementById('dd-work').className='dd-item'+(cat==='עבודה'?' active-work':'');document.getElementById('dd-home').className='dd-item'+(cat==='בית'?' active-home':'');var first=SUB_OPTIONS[cat][0];selectedSub=first.value;document.getElementById('dd-label-sub').textContent=first.label;buildSubMenu(cat,first.value);closeAllDD();document.getElementById('new-task-input').focus()}
+function selectDue(type){var picker=document.getElementById('dd-date-picker');['dd-today-opt','dd-tomorrow-opt','dd-week-opt','dd-custom-opt'].forEach(function(id){document.getElementById(id).classList.remove('active-due')});if(type==='custom'){document.getElementById('dd-custom-opt').classList.add('active-due');picker.style.display='block';document.getElementById('custom-date').focus();return}picker.style.display='none';var map={today:{due:getToday(),label:'☀️ היום',id:'dd-today-opt'},tomorrow:{due:addDays(1),label:'🌅 מחר',id:'dd-tomorrow-opt'},week:{due:addDays(7),label:'📆 עוד שבוע',id:'dd-week-opt'}};selectedDue=map[type].due;document.getElementById('dd-label-due').textContent=map[type].label;document.getElementById(map[type].id).classList.add('active-due');closeAllDD();document.getElementById('new-task-input').focus()}
+function applyCustomDate(){var val=document.getElementById('custom-date').value;if(!val)return;selectedDue=val;var p=val.split('-');document.getElementById('dd-label-due').textContent='🗓 '+p[2]+'/'+p[1];document.getElementById('dd-custom-opt').classList.add('active-due');closeAllDD();document.getElementById('new-task-input').focus()}
+function askDelete(id){var t=state.tasks.find(function(x){return x.id===id});if(!t)return;pendingDeleteId=id;document.getElementById('confirm-desc').textContent=t.description;document.getElementById('confirm-overlay').classList.add('open')}
+function confirmDelete(){state.tasks=state.tasks.filter(function(x){return x.id!==pendingDeleteId});pendingDeleteId=null;document.getElementById('confirm-overlay').classList.remove('open');updateStats();render();persist()}
+function cancelDelete(){pendingDeleteId=null;document.getElementById('confirm-overlay').classList.remove('open')}
+function openEdit(id){var t=state.tasks.find(function(x){return x.id===id});if(!t)return;editingId=id;editCat=t.category;editStatus=t.status;editConsult=t.consult||'לא';document.getElementById('e-desc').value=t.description;document.getElementById('e-due').value=t.due||'';document.querySelectorAll('[data-cat]').forEach(function(el){el.className='radio-chip'+(el.dataset.cat===editCat?' sel-'+(editCat==='עבודה'?'work':'home'):'')});buildEditSubSelect(editCat,t.subcategory);var stMap={'פתוחה':'open','בתהליך':'progress','הושלמה':'done','בוטלה':'cancel'};document.querySelectorAll('[data-st]').forEach(function(el){el.className='radio-chip'+(el.dataset.st===editStatus?' sel-'+(stMap[editStatus]||'open'):'')});document.querySelectorAll('[data-con]').forEach(function(el){el.className='radio-chip'+(el.dataset.con===editConsult?' sel-'+(editConsult==='כן'?'yes':'no'):'')});document.getElementById('edit-overlay').classList.add('open');setTimeout(function(){document.getElementById('e-desc').focus()},80)}
+function buildEditSubSelect(cat,activeSub){var sel=document.getElementById('e-sub');sel.innerHTML=(SUB_OPTIONS[cat]||[]).map(function(o){return'<option value="'+o.value+'"'+(o.value===activeSub?' selected':'')+'>'+o.label+'</option>'}).join('')}
+function editSelectCat(cat){editCat=cat;document.querySelectorAll('[data-cat]').forEach(function(el){el.className='radio-chip'+(el.dataset.cat===cat?' sel-'+(cat==='עבודה'?'work':'home'):'')});buildEditSubSelect(cat,SUB_OPTIONS[cat][0].value)}
+function editSelectStatus(st){editStatus=st;var stMap={'פתוחה':'open','בתהליך':'progress','הושלמה':'done','בוטלה':'cancel'};document.querySelectorAll('[data-st]').forEach(function(el){el.className='radio-chip'+(el.dataset.st===st?' sel-'+(stMap[st]||'open'):'')}) }
+function editSelectConsult(val){editConsult=val;document.querySelectorAll('[data-con]').forEach(function(el){el.className='radio-chip'+(el.dataset.con===val?' sel-'+(val==='כן'?'yes':'no'):'')}) }
+function saveEdit(){var t=state.tasks.find(function(x){return x.id===editingId});if(!t)return;var desc=document.getElementById('e-desc').value.trim();if(!desc)return;t.description=desc;t.category=editCat;t.subcategory=document.getElementById('e-sub').value;t.status=editStatus;t.due=document.getElementById('e-due').value||null;t.consult=editConsult;closeEdit();updateStats();render();persist()}
+function closeEdit(){document.getElementById('edit-overlay').classList.remove('open');editingId=null}
+function overlayClick(e){if(e.target===document.getElementById('edit-overlay'))closeEdit()}
+function addTask(){var input=document.getElementById('new-task-input');var desc=input.value.trim();if(!desc){input.focus();return}state.tasks.push({id:genId(),description:desc,category:selectedCat,subcategory:selectedSub,status:'פתוחה',due:selectedDue,consult:'לא',created:getToday()});input.value='';input.focus();updateStats();render();persist()}
+function markDone(id){var t=state.tasks.find(function(x){return x.id===id});if(!t)return;t.status='הושלמה';updateStats();render();persist()}
+document.addEventListener('DOMContentLoaded',function(){
+  document.getElementById('new-task-input').addEventListener('keydown',function(e){if(e.key==='Enter')addTask()});
+  document.getElementById('e-desc').addEventListener('keydown',function(e){if(e.key==='Enter')saveEdit()});
+  buildSubMenu(selectedCat,selectedSub);
+  loadTasks();
+});
+function updateStats(){var today=getToday(),open=0,tod=0,over=0,con=0;state.tasks.forEach(function(t){var active=t.status!=='הושלמה'&&t.status!=='בוטלה';if(active){open++;if(t.due===today)tod++;if(t.due&&t.due<today)over++;if(t.consult==='כן')con++}});document.getElementById('s-open').textContent=open;document.getElementById('s-today').textContent=tod;document.getElementById('s-over').textContent=over;document.getElementById('s-cons').textContent=con;document.getElementById('footer').textContent=state.tasks.length+' משימות סה"כ · '+open+' פתוחות'}
+function setF(f){currentF=f;document.querySelectorAll('.fb').forEach(function(b){b.classList.toggle('active',b.getAttribute('data-f')===f)});render()}
+function filtered(){var today=getToday();return state.tasks.filter(function(t){var active=t.status!=='הושלמה'&&t.status!=='בוטלה';if(currentF==='all')return true;if(currentF==='open')return active;if(currentF==='today')return active&&t.due===today;if(currentF==='overdue')return active&&t.due&&t.due<today;if(currentF==='consult')return active&&t.consult==='כן';if(currentF==='עבודה'||currentF==='בית')return active&&t.category===currentF;return true})}
+function render(){
+  var today=getToday();var list=filtered();list.sort(function(a,b){return(a.due||'9999').localeCompare(b.due||'9999')});
+  var el=document.getElementById('task-list');
+  if(!list.length){el.innerHTML='<div class="empty"><div class="empty-icon">✅</div>'+(currentF==='open'?'אין משימות פתוחות':'אין משימות בסינון זה')+'</div>';return}
+  var statusMap={'פתוחה':'status-open','בתהליך':'status-progress','הושלמה':'status-done','בוטלה':'status-cancel'};
+  el.innerHTML=list.map(function(t){
+    var isOver=t.due&&t.due<today&&t.status!=='הושלמה'&&t.status!=='בוטלה',isToday=t.due===today;
+    var cls='task ';
+    if(t.status==='הושלמה'||t.status==='בוטלה')cls+='done';
+    else if(t.status==='בתהליך')cls+='progress';
+    else if(isOver)cls+='overdue';
+    else cls+='open';
+    var isDone=t.status==='הושלמה'||t.status==='בוטלה';
+    var dueBadge='';
+    if(t.due){if(isOver)dueBadge='<span class="badge due-overdue">⚠ '+fmtDateShort(t.due)+'</span>';else if(isToday)dueBadge='<span class="badge due-today">📅 היום</span>';else dueBadge='<span class="badge due-future">📅 '+fmtDateShort(t.due)+'</span>'}
+    return'<div class="'+cls+'"><div class="task-top"><div style="flex:1;min-width:0"><div class="task-desc" onclick="openEdit(\''+t.id+'\')" title="לחץ לעריכה">'+esc(t.description)+'</div></div><div class="task-actions">'+(!isDone?'<button class="done-btn" onclick="markDone(\''+t.id+'\')">✓ בוצע</button>':'<button class="done-btn reopen" onclick="reopenTask(\''+t.id+'\')">↩ החזר</button>')+'<button class="delete-btn" onclick="askDelete(\''+t.id+'\')" title="מחק">🗑</button></div></div><div class="badges"><span class="badge '+(t.category==='עבודה'?'cat-work':'cat-home')+'">'+esc(t.category)+'</span>'+(t.subcategory?'<span class="badge sub">'+esc(t.subcategory)+'</span>':'')+'<span class="badge '+(statusMap[t.status]||'')+'">'+esc(t.status)+'</span>'+dueBadge+(t.consult==='כן'?'<span class="badge consult">💬 התייעצות</span>':'')+'</div></div>';
+  }).join('');
+}
+function reopenTask(id){var t=state.tasks.find(function(x){return x.id===id});if(!t)return;t.status='פתוחה';updateStats();render();persist()}
+
+function backupJSON(){
+  try{
+    var blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json;charset=utf-8'});
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement('a');a.href=url;a.download='גיבוי-משימות-'+getToday()+'.json';a.click();
+    URL.revokeObjectURL(url);
+    showToast('🗄 גיבוי נשמר · '+state.tasks.length+' משימות');
+  }catch(e){showToast('שגיאה בגיבוי: '+e.message,true)}
+}
+
+function restoreJSON(ev){
+  var f=ev.target.files&&ev.target.files[0];
+  if(!f)return;
+  var r=new FileReader();
+  r.onload=function(){
+    try{
+      var p=JSON.parse(r.result);
+      if(!p||!Array.isArray(p.tasks))throw new Error('הקובץ אינו גיבוי תקין');
+      if(state.tasks.length&&!confirm('שחזור יחליף את '+state.tasks.length+' המשימות הקיימות. להמשיך?'))return;
+      state=p;persist();updateStats();render();
+      setFileBar('שוחזר מגיבוי · '+state.tasks.length+' משימות','ok');
+      showToast('✅ שוחזרו '+state.tasks.length+' משימות');
+    }catch(e){showToast('שגיאה בשחזור: '+e.message,true)}
+  };
+  r.onerror=function(){showToast('לא ניתן לקרוא את הקובץ',true)};
+  r.readAsText(f);
+  ev.target.value='';
+}
+</script>
+</body>
+</html>
+
