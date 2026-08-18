@@ -1,4 +1,4 @@
-# עדכון אפליקציית Windows "יומן משימות אישי" לגרסה האחרונה מהריפו
+﻿# עדכון אפליקציית Windows "יומן משימות אישי" לגרסה האחרונה מהריפו
 # מריצים מתוך תיקיית הפרויקט:
 #   powershell -ExecutionPolicy Bypass -File .\scripts\update-windows-app.ps1
 #
@@ -39,8 +39,8 @@ if (-not (Test-Path $appDir)) {
 }
 
 # אזהרה אם האפליקציה פתוחה - Edge עלול להחזיק את הקובץ
-$running = Get-Process msedge -ErrorAction SilentlyContinue |
-           Where-Object { $_.Path -and $_.CommandLine -like '*PersonalTaskJournal*' }
+$running = @(Get-CimInstance Win32_Process -Filter "Name='msedge.exe'" -ErrorAction SilentlyContinue |
+             Where-Object { $_.CommandLine -like '*PersonalTaskJournal*' })
 if ($running) {
     Write-Host '  ! האפליקציה פתוחה - מומלץ לסגור אותה לפני העדכון.' -ForegroundColor DarkYellow
 }
