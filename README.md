@@ -55,9 +55,27 @@ powershell -ExecutionPolicy Bypass -File .\scripts\update-windows-app.ps1
 
 ```
 index.html                        האפליקציה — הכל בקובץ אחד (HTML + CSS + JS)
+installer/                        התקנה כאפליקציית Windows (Edge --app)
+  התקן.bat                        הרצה → מתקין
+  הסר התקנה.bat                   הרצה → מסיר
+  install_journal.ps1             לוגיקת ההתקנה (לוקח את index.html מהשורש)
+  icon.ico                        אייקון האפליקציה
+  הוראות.txt                      הסבר למשתמש
 scripts/update-windows-app.ps1    עדכון אפליקציית ה-Windows לגרסה שבריפו
 archive/task-manager-simple.html  גרסה מוקדמת ומצומצמת יותר (לא בשימוש)
 ```
+
+### התקנה על מחשב חדש
+
+```bash
+git clone https://github.com/Feldmoni/Task-Manager.git
+```
+
+ואז הרצה של `installer\התקן.bat`. נוצרים שני קיצורים לאותה אפליקציה —
+**Task-Manager** ו-**יומן משימות אישי** — כדי שחיפוש בתפריט Start ימצא בשתי השפות.
+
+> ⚠️ קבצי `.ps1` עם טקסט בעברית **חייבים** להישמר כ-UTF-8 **עם BOM**.
+> PowerShell 5.1 קורא אותם כ-ANSI בלעדיו והעברית שוברת את הפרסר.
 
 ---
 

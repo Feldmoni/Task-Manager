@@ -1,0 +1,14 @@
+# Windows scripts must keep CRLF so cmd.exe / PowerShell run them cleanly
+*.ps1  text eol=crlf
+*.bat  text eol=crlf
+*.cmd  text eol=crlf
+*.txt  text eol=crlf
+
+# The app itself - LF is fine, it's served over the web
+*.html text eol=lf
+*.md   text eol=lf
+
+# Never line-ending-convert binaries
+*.ico  binary
+*.png  binary
+*.jpg  binary

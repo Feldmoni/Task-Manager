@@ -1,0 +1,4 @@
+@echo off
+rem הסרת "יומן משימות אישי" / Task-Manager
+powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "$names=@('יומן משימות אישי','Task-Manager'); $prog=Join-Path $env:APPDATA 'Microsoft\Windows\Start Menu\Programs'; $desk=[Environment]::GetFolderPath('Desktop'); foreach($n in $names){ Remove-Item (Join-Path $prog ($n+'.lnk')) -Force -EA SilentlyContinue; Remove-Item (Join-Path $desk ($n+'.lnk')) -Force -EA SilentlyContinue }; Remove-Item 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\PersonalTaskJournal' -Recurse -Force -EA SilentlyContinue; $app=Join-Path $env:LOCALAPPDATA 'PersonalTaskJournal'; if($app.EndsWith('PersonalTaskJournal') -and (Test-Path $app)){ Remove-Item -LiteralPath $app -Recurse -Force -EA SilentlyContinue }; Write-Host 'ההסרה הושלמה.' -ForegroundColor Green"
+pause
