@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>יומן משימות אישי</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+    direction: rtl;
+    background: #f1f3f5;
+    min-height: 100vh;
+    padding: 24px;
+    color: #212529;
+  }
+  .app { max-width: 860px; margin: 0 auto; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 16px rgba(0,0,0,0.10); }
+
+  /* TOP BAR */
+  .top { background: linear-gradient(135deg, #3b5bdb, #1971c2); padding: 14px 22px; display: flex; align-items: center; justify-content: space-between; }
+  .top-title { display: flex; align-items: center; gap: 10px; color: white; }
+  .top-title h1 { font-size: 19px; font-weight: 600; }
+  .top-title .snap { font-size: 12px; color: rgba(255,255,255,.75); margin-top: 3px; }
+  .top-btns { display: flex; gap: 8px; }
+  .tbtn { font-size: 13px; padding: 7px 15px; border-radius: 7px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-weight: 500; }
+  .tbtn-save { background: rgba(255,255,255,.2); color: white; border: 1px solid rgba(255,255,255,.4); }
+  .tbtn-save:hover { background: rgba(255,255,255,.3); }
+  .tbtn-word { background: white; color: #1971c2; border: none; }
+  .tbtn-word:hover { background: #e7f5ff; }
+
+  /* WARNING BAR */
+  .warn { background: #fff9db; border-bottom: 1px solid #ffe066; padding: 9px 22px; font-size: 13px; color: #856404; display: flex; align-items: center; gap: 8px; }
+  .warn.ok { background: #ebfbee; border-color: #2f9e44; color: #2f9e44; }
+  .warn.hidden { display: none; }
+  .warn .wx { margin-right: auto; background: transparent; border: none; cursor: pointer; font-size: 17px; color: inherit; }
+
+  /* TOOLBAR */
+  .toolbar { background: #fff; border-bottom: 1px solid #dee2e6; padding: 12px 18px; display: flex; flex-direction: column; gap: 10px; }
+  .row1 { display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
+  .row2 { display: flex; gap: 8px; align-items: center; }
+  .dd { position: relative; display: flex; align-items: center; gap: 7px; padding: 8px 13px; border-radius: 7px; border: 1px solid #dee2e6; background: #f8f9fa; cursor: pointer; font-size: 13px; color: #495057; white-space: nowrap; }
+  .dd:hover { border-color: #adb5bd; background: #f1f3f5; }
+  .dd select { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; direction: rtl; }
+  .btn-add { font-size: 14px; padding: 9px 18px; border-radius: 7px; border: 1px solid #adb5bd; background: #f8f9fa; color: #212529; cursor: pointer; font-weight: 600; white-space: nowrap; flex-shrink: 0; display: flex; align-items: center; gap: 6px; }
+  .btn-add:hover { background: #e9ecef; border-color: #868e96; }
+  .tinput { flex: 1; font-size: 14px; padding: 9px 13px; border-radius: 7px; border: 1px solid #dee2e6; background: #fff; color: #212529; direction: rtl; font-family: inherit; }
+  .tinput:focus { outline: none; border-color: #3b5bdb; box-shadow: 0 0 0 3px rgba(59,91,219,0.12); }
+
+  /* STATS */
+  .stats { display: grid; grid-template-columns: repeat(4,1fr); border-bottom: 1px solid #dee2e6; background: #fff; }
+  .sbox { padding: 16px; text-align: center; border-right: 1px solid #dee2e6; }
+  .sbox:first-child { border-right: none; }
+  .snum { font-size: 32px; font-weight: 600; line-height: 1; }
+  .slbl { font-size: 12px; color: #868e96; margin-top: 5px; }
+  .sbox.op .snum { color: #3b5bdb; }
+  .sbox.td .snum { color: #f08c00; }
+  .sbox.ov .snum { color: #e03131; }
+  .sbox.co .snum { color: #7048e8; }
+
+  /* FILTER BAR */
+  .fbar { display: flex; gap: 6px; padding: 10px 18px; border-bottom: 1px solid #dee2e6; background: #fff; flex-wrap: wrap; }
+  .fb { font-size: 13px; padding: 5px 16px; border-radius: 6px; border: 1px solid #dee2e6; background: transparent; cursor: pointer; color: #868e96; font-family: inherit; }
+  .fb:hover { border-color: #adb5bd; color: #212529; }
+  .fb.act { background: #212529; color: white; border-color: #212529; }
+
+  /* TASK LIST */
+  .tlist { background: #fff; }
+  .trow { display: flex; align-items: center; gap: 12px; padding: 13px 18px; border-bottom: 1px solid #f1f3f5; }
+  .trow:last-child { border-bottom: none; }
+  .trow:hover { background: #f8f9fa; }
+  .trow.late { background: #fff5f5; }
+  .trow.late:hover { background: #ffe3e3; }
+  .tmain { flex: 1; min-width: 0; }
+  .ttitle { font-size: 15px; color: #212529; margin-bottom: 6px; font-weight: 400; }
+  .tags { display: flex; gap: 5px; flex-wrap: wrap; }
+  .tag { font-size: 11px; padding: 2px 9px; border-radius: 20px; font-weight: 500; display: inline-flex; align-items: center; gap: 3px; }
+  .tw { background: #e7f5ff; color: #1971c2; }
+  .th { background: #ebfbee; color: #2f9e44; }
+  .tt { background: #f3f0ff; color: #6741d9; }
+  .to { background: #fff0f6; color: #c2255c; }
+  .tdt { background: #e7f5ff; color: #1971c2; }
+  .ts { background: #fff9db; color: #856404; }
+  .tl { background: #fff5f5; color: #c92a2a; }
+  .tf { background: #f8f9fa; color: #868e96; border: 1px solid #dee2e6; }
+  .tc { background: #f3f0ff; color: #6741d9; cursor: pointer; }
+  .ta { background: #f8f9fa; color: #adb5bd; border: 1px solid #dee2e6; cursor: pointer; }
+  .ta:hover { color: #495057; border-color: #adb5bd; }
+  .note-area { margin-top: 7px; font-size: 13px; color: #868e96; white-space: pre-wrap; cursor: pointer; line-height: 1.5; }
+  .note-area:hover { color: #495057; }
+  .note-ta { width: 100%; font-size: 13px; padding: 7px 11px; border-radius: 7px; border: 1px solid #dee2e6; background: #f8f9fa; color: #212529; resize: vertical; min-height: 55px; font-family: inherit; margin-top: 7px; direction: rtl; }
+  .note-ta:focus { outline: none; border-color: #3b5bdb; }
+  .nbtns { display: flex; gap: 6px; margin-top: 5px; }
+  .nbtns button { font-size: 12px; padding: 4px 12px; border-radius: 6px; border: 1px solid #dee2e6; background: #f8f9fa; cursor: pointer; font-family: inherit; }
+  .nbtns button:hover { background: #e9ecef; }
+  .tacts { display: flex; gap: 7px; flex-shrink: 0; align-items: center; margin-right: auto; direction: ltr; }
+  .bdone { font-size: 12px; padding: 6px 13px; border-radius: 7px; border: 1px solid #2f9e44; background: #ebfbee; color: #2f9e44; cursor: pointer; font-weight: 500; white-space: nowrap; font-family: inherit; }
+  .bdone:hover { background: #d3f9d8; }
+  .bdone.u { border-color: #dee2e6; background: #f8f9fa; color: #868e96; }
+  .bdel { background: transparent; border: none; cursor: pointer; color: #adb5bd; font-size: 18px; padding: 3px 5px; line-height: 1; }
+  .bdel:hover { color: #e03131; }
+  .empty { text-align: center; padding: 3rem; color: #adb5bd; font-size: 14px; }
+
+  /* FOOTER */
+  .foot { background: #f8f9fa; border-top: 1px solid #dee2e6; padding: 8px 18px; font-size: 12px; color: #adb5bd; text-align: center; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- TOP BAR -->
+  <div class="top">
+    <div class="top-title">
+      <span style="font-size:22px">📋</span>
+      <div>
+        <h1>יומן משימות אישי</h1>
+        <div class="snap" id="snap"></div>
+      </div>
+    </div>
+    <div class="top-btns">
+      <button class="tbtn tbtn-save" onclick="mSave()">💾 שמור</button>
+      <button class="tbtn tbtn-word" onclick="expWord()">📄 יצוא Word</button>
+    </div>
+  </div>
+
+  <!-- WARNING BAR -->
+  <div class="warn hidden" id="warn">
+    <span>⚠</span>
+    <span id="wmsg"></span>
+    <button class="wx" onclick="hideW()">✕</button>
+  </div>
+
+  <!-- TOOLBAR -->
+  <div class="toolbar">
+    <div class="row1">
+      <div class="dd">
+        <span>💼</span><span id="ld">עבודה</span><span>▾</span>
+        <select id="sd" onchange="onDom()">
+          <option value="work">עבודה</option>
+          <option value="home">בית</option>
+        </select>
+      </div>
+      <div class="dd">
+        <span>🏷</span><span id="lt">הנהלה</span><span>▾</span>
+        <select id="st" onchange="document.getElementById('lt').textContent=this.options[this.selectedIndex].text">
+          <option>הנהלה</option><option>שיווק</option><option>פיתוח</option><option>מכירות</option>
+        </select>
+      </div>
+      <div class="dd">
+        <span>📅</span><span id="ldue">היום</span><span>▾</span>
+        <select id="sdue" onchange="onDue()">
+          <option value="0">היום</option>
+          <option value="1">מחר</option>
+          <option value="7">עוד שבוע</option>
+          <option value="custom">תאריך מדויק</option>
+        </select>
+      </div>
+      <input type="date" id="cdate" style="display:none;font-size:13px;padding:8px 12px;border-radius:7px;border:1px solid #dee2e6;background:#f8f9fa;color:#212529;font-family:inherit;" />
+    </div>
+    <div class="row2">
+      <button class="btn-add" onclick="addT()">+ הוסף משימה</button>
+      <input class="tinput" id="ti" placeholder="תיאור המשימה החדשה..." />
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats">
+    <div class="sbox co"><div class="snum" id="sc">0</div><div class="slbl">להתייעצות</div></div>
+    <div class="sbox ov"><div class="snum" id="so">0</div><div class="slbl">עבר זמן</div></div>
+    <div class="sbox td"><div class="snum" id="std">0</div><div class="slbl">היום</div></div>
+    <div class="sbox op"><div class="snum" id="sp">0</div><div class="slbl">פתוחות</div></div>
+  </div>
+
+  <!-- FILTER BAR -->
+  <div class="fbar">
+    <button class="fb act" onclick="setF('all',this)">הכל</button>
+    <button class="fb" onclick="setF('consult',this)">התייעצות</button>
+    <button class="fb" onclick="setF('home',this)">בית</button>
+    <button class="fb" onclick="setF('work',this)">עבודה</button>
+    <button class="fb" onclick="setF('overdue',this)">עבר זמן</button>
+    <button class="fb" onclick="setF('today',this)">היום</button>
+    <button class="fb" onclick="setF('open',this)">פתוחות</button>
+  </div>
+
+  <!-- TASK LIST -->
+  <div class="tlist" id="tlist">
+    <div class="empty">טוען משימות...</div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="foot" id="foot">יומן משימות אישי · שמירה מקומית</div>
+
+</div>
+
+<script>
+const KEY = 'my_tasks_v11';
+const tod = new Date(); tod.setHours(0,0,0,0);
+document.getElementById('snap').textContent = 'snapshot: ' +
+  tod.toLocaleDateString('he-IL',{day:'2-digit',month:'2-digit',year:'numeric'}).replace(/\./g,'/');
+
+const cdEl = document.getElementById('cdate');
+cdEl.min = tod.toISOString().split('T')[0];
+cdEl.value = tod.toISOString().split('T')[0];
+
+const topics = {
+  work: ['הנהלה','שיווק','פיתוח','מכירות'],
+  home: ['משפחה','גיטרה','גינה','אגודה','כללי']
+};
+
+let flt='all', nid=1, tasks=[], enote=null;
+
+// ── Warning bar ──────────────────────────────────────────────
+function showW(msg, ok) {
+  const b = document.getElementById('warn');
+  b.className = 'warn' + (ok ? ' ok' : '');
+  document.getElementById('wmsg').textContent = msg;
+}
+function hideW() { document.getElementById('warn').className = 'warn hidden'; }
+
+// ── Storage ──────────────────────────────────────────────────
+function save() {
+  try {
+    localStorage.setItem(KEY, JSON.stringify({
+      tasks: tasks.map(t => ({...t, deadline: t.deadline ? t.deadline.toISOString() : null})),
+      nid
+    }));
+    document.getElementById('foot').textContent =
+      tasks.length + ' משימות · ' + tasks.filter(t=>!t.done).length + ' פתוחות · שמירה מקומית';
+  } catch(e) { showW('שגיאת שמירה'); }
+}
+
+function load() {
+  try {
+    const r = localStorage.getItem(KEY);
+    if (r) {
+      const d = JSON.parse(r);
+      tasks = (d.tasks||[]).map(t => ({
+        ...t,
+        deadline: t.deadline ? new Date(t.deadline) : null,
+        consult: t.consult || false
+      }));
+      nid = d.nid || (tasks.length ? Math.max(...tasks.map(t=>t.id))+1 : 1);
+    } else {
+      showW('נטענו נתוני ברירת מחדל — הוסף את המשימות הראשונות שלך');
+    }
+    document.getElementById('foot').textContent = tasks.length + ' משימות · שמירה מקומית';
+  } catch(e) { showW('שגיאת טעינה'); }
+  render();
+}
+
+function mSave() { save(); showW('נשמר בהצלחה ✓', true); setTimeout(hideW, 2500); }
+
+function expWord() {
+  const lines = tasks.filter(t=>!t.done).map(t =>
+    `• ${t.text} [${t.domain==='work'?'עבודה':'בית'} | ${t.topic} | ${t.deadline?t.deadline.toLocaleDateString('he-IL'):'ללא תאריך'}]`
+  ).join('\n');
+  const blob = new Blob(
+    [`יומן משימות אישי\n${new Date().toLocaleDateString('he-IL')}\n\n${lines}`],
+    {type:'text/plain;charset=utf-8'}
+  );
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'משימות.txt';
+  a.click();
+}
+
+// ── Dropdowns ────────────────────────────────────────────────
+function onDom() {
+  const d = document.getElementById('sd').value;
+  document.getElementById('ld').textContent = d==='work' ? 'עבודה' : 'בית';
+  const s = document.getElementById('st');
+  s.innerHTML = topics[d].map(t=>`<option>${t}</option>`).join('');
+  document.getElementById('lt').textContent = topics[d][0];
+}
+
+function onDue() {
+  const v = document.getElementById('sdue').value;
+  document.getElementById('ldue').textContent =
+    {'0':'היום','1':'מחר','7':'עוד שבוע','custom':'תאריך מדויק'}[v];
+  cdEl.style.display = v==='custom' ? 'inline-block' : 'none';
+}
+
+function getDL() {
+  const v = document.getElementById('sdue').value;
+  if (v==='custom') {
+    const d = cdEl.value; if (!d) return null;
+    const r = new Date(d); r.setHours(0,0,0,0); return r;
+  }
+  const d = new Date(tod); d.setDate(d.getDate()+parseInt(v)); return d;
+}
+
+// ── Task CRUD ─────────────────────────────────────────────────
+function addT() {
+  const inp = document.getElementById('ti'), text = inp.value.trim();
+  if (!text) return;
+  tasks.push({
+    id: nid++, text,
+    deadline: getDL(),
+    domain: document.getElementById('sd').value,
+    topic: document.getElementById('st').value,
+    done: false, note: '', consult: false
+  });
+  inp.value = ''; render(); save();
+}
+document.getElementById('ti').addEventListener('keydown', e => { if(e.key==='Enter') addT(); });
+
+function togDone(id)  { const t=tasks.find(t=>t.id===id); if(t){t.done=!t.done;render();save();} }
+function togCons(id)  { const t=tasks.find(t=>t.id===id); if(t){t.consult=!t.consult;render();save();} }
+function del(id)      { if(!confirm('למחוק את המשימה?')) return; tasks=tasks.filter(t=>t.id!==id);render();save(); }
+function openN(id)    { enote=id; render(); const ta=document.getElementById('nta-'+id); if(ta)ta.focus(); }
+function saveN(id)    { const ta=document.getElementById('nta-'+id),t=tasks.find(t=>t.id===id); if(t&&ta)t.note=ta.value; enote=null;render();save(); }
+function cancelN()    { enote=null; render(); }
+function setF(f,btn)  { flt=f; document.querySelectorAll('.fb').forEach(b=>b.classList.remove('act')); btn.classList.add('act'); render(); }
+
+// ── Helpers ───────────────────────────────────────────────────
+function dueL(t) {
+  if (!t.deadline) return null;
+  const diff = Math.round((t.deadline-tod)/86400000);
+  if (diff<0)  return {txt:'⚠ '+t.deadline.toLocaleDateString('he-IL',{day:'2-digit',month:'2-digit'}), cls:'tl'};
+  if (diff===0) return {txt:'📅 היום', cls:'tdt'};
+  if (diff===1) return {txt:'📅 מחר',  cls:'ts'};
+  if (diff<=7)  return {txt:'📅 '+t.deadline.toLocaleDateString('he-IL',{day:'2-digit',month:'2-digit'}), cls:'ts'};
+  return {txt:'📅 '+t.deadline.toLocaleDateString('he-IL',{day:'2-digit',month:'2-digit'}), cls:'tf'};
+}
+function isOv(t)  { return !t.done&&t.deadline&&Math.round((t.deadline-tod)/86400000)<0; }
+function isTod(t) { return !t.done&&t.deadline&&Math.round((t.deadline-tod)/86400000)===0; }
+
+// ── Render ────────────────────────────────────────────────────
+function render() {
+  document.getElementById('sp').textContent  = tasks.filter(t=>!t.done).length;
+  document.getElementById('std').textContent = tasks.filter(t=>isTod(t)).length;
+  document.getElementById('so').textContent  = tasks.filter(t=>isOv(t)).length;
+  document.getElementById('sc').textContent  = tasks.filter(t=>t.consult&&!t.done).length;
+
+  let vis = [...tasks];
+  if      (flt==='open')    vis = vis.filter(t=>!t.done);
+  else if (flt==='today')   vis = vis.filter(t=>isTod(t));
+  else if (flt==='overdue') vis = vis.filter(t=>isOv(t));
+  else if (flt==='work')    vis = vis.filter(t=>t.domain==='work');
+  else if (flt==='home')    vis = vis.filter(t=>t.domain==='home');
+  else if (flt==='consult') vis = vis.filter(t=>t.consult&&!t.done);
+  vis.sort((a,b)=>{
+    if (a.done!==b.done) return a.done?1:-1;
+    return (a.deadline?.getTime()||9e12)-(b.deadline?.getTime()||9e12);
+  });
+
+  const list = document.getElementById('tlist');
+  if (!vis.length) { list.innerHTML='<div class="empty">אין משימות להצגה</div>'; return; }
+
+  list.innerHTML = vis.map(t => {
+    const due = dueL(t);
+    const ne = (t.note||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const isEd = enote===t.id;
+    let nh = '';
+    if (isEd)
+      nh = `<textarea id="nta-${t.id}" class="note-ta" placeholder="הוסף הערה...">${ne}</textarea>
+            <div class="nbtns">
+              <button onclick="saveN(${t.id})">שמור</button>
+              <button onclick="cancelN()">ביטול</button>
+            </div>`;
+    else if (t.note)
+      nh = `<div class="note-area" onclick="openN(${t.id})">${t.note.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>`;
+
+    return `
+    <div class="trow${isOv(t)?' late':''}">
+      <div class="tmain" style="${t.done?'opacity:0.4':''}">
+        <div class="ttitle"${t.done?' style="text-decoration:line-through"':''}>${t.text}</div>
+        <div class="tags">
+          <span class="tag ${t.domain==='work'?'tw':'th'}">${t.domain==='work'?'עבודה':'בית'}</span>
+          <span class="tag tt">${t.topic}</span>
+          ${!t.done?'<span class="tag to">פתוחה</span>':''}
+          ${due?`<span class="tag ${due.cls}">${due.txt}</span>`:''}
+          ${t.consult
+            ?`<span class="tag tc" onclick="togCons(${t.id})" title="הסר מהתייעצות">💬 להתייעצות</span>`
+            :`<span class="tag ta" onclick="togCons(${t.id})" title="הוסף להתייעצות">+ ייעוץ</span>`}
+          ${!isEd?`<span class="tag ta" onclick="openN(${t.id})">✏ הערה</span>`:''}
+        </div>
+        ${nh}
+      </div>
+      <div class="tacts">
+        <button class="bdone${t.done?' u':''}" onclick="togDone(${t.id})">${t.done?'↩ פתח':'✓ בוצע'}</button>
+        <button class="bdel" onclick="del(${t.id})" title="מחק">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+load();
+</script>
+</body>
+</html>
