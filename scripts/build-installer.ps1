@@ -1,6 +1,6 @@
 ﻿# בניית קובץ התקנה יחיד ועצמאי ל-Windows.
 #
-# אורז את index.html, icon.ico ו-install_journal.ps1 לתוך קובץ .bat אחד,
+# אורז את index.html, app-icon.ico ו-install_journal.ps1 לתוך קובץ .bat אחד,
 # כשכל אחד מהם מקודד ב-Base64 ומוטמע בסוף הקובץ.
 #
 # למה Base64 ולא טקסט רגיל: קבצי .bat נקראים ע"י cmd.exe בקידוד ה-OEM של
@@ -17,7 +17,7 @@ $out  = Join-Path $repo 'dist\Task-Manager-Setup.bat'
 # מה נארז: מזהה בקובץ -> שם הקובץ אחרי החילוץ -> מקור
 $payloads = @(
     @{ Id = 'INDEX'; Name = 'index.html';          Path = Join-Path $repo 'index.html' },
-    @{ Id = 'ICON';  Name = 'icon.ico';            Path = Join-Path $repo 'installer\icon.ico' },
+    @{ Id = 'ICON';  Name = 'app-icon.ico';            Path = Join-Path $repo 'installer\app-icon.ico' },
     @{ Id = 'SETUP'; Name = 'install_journal.ps1'; Path = Join-Path $repo 'installer\install_journal.ps1' }
 )
 
@@ -41,7 +41,7 @@ echo   ============================================
 echo.
 echo   Installing...
 echo.
-powershell -NoProfile -ExecutionPolicy Bypass -Command "$ErrorActionPreference='Stop'; try { $L=[IO.File]::ReadAllLines('%~f0'); $d=Join-Path $env:TEMP 'TaskManagerSetup'; if(Test-Path $d){Remove-Item -LiteralPath $d -Recurse -Force}; New-Item -ItemType Directory -Force $d|Out-Null; foreach($p in @(@('INDEX','index.html'),@('ICON','icon.ico'),@('SETUP','install_journal.ps1'))){ $s=[Array]::IndexOf($L,(':::BEGIN:'+$p[0]+':::')); $e=[Array]::IndexOf($L,(':::END:'+$p[0]+':::')); if($s -lt 0 -or $e -le $s){throw ('payload missing: '+$p[0])}; $b64=-join $L[($s+1)..($e-1)]; [IO.File]::WriteAllBytes((Join-Path $d $p[1]),[Convert]::FromBase64String($b64)) }; & (Join-Path $d 'install_journal.ps1') %SILENT%; Remove-Item -LiteralPath $d -Recurse -Force -ErrorAction SilentlyContinue } catch { Write-Host ('SETUP ERROR: '+$_.Exception.Message) -ForegroundColor Red }"
+powershell -NoProfile -ExecutionPolicy Bypass -Command "$ErrorActionPreference='Stop'; try { $L=[IO.File]::ReadAllLines('%~f0'); $d=Join-Path $env:TEMP 'TaskManagerSetup'; if(Test-Path $d){Remove-Item -LiteralPath $d -Recurse -Force}; New-Item -ItemType Directory -Force $d|Out-Null; foreach($p in @(@('INDEX','index.html'),@('ICON','app-icon.ico'),@('SETUP','install_journal.ps1'))){ $s=[Array]::IndexOf($L,(':::BEGIN:'+$p[0]+':::')); $e=[Array]::IndexOf($L,(':::END:'+$p[0]+':::')); if($s -lt 0 -or $e -le $s){throw ('payload missing: '+$p[0])}; $b64=-join $L[($s+1)..($e-1)]; [IO.File]::WriteAllBytes((Join-Path $d $p[1]),[Convert]::FromBase64String($b64)) }; & (Join-Path $d 'install_journal.ps1') %SILENT%; Remove-Item -LiteralPath $d -Recurse -Force -ErrorAction SilentlyContinue } catch { Write-Host ('SETUP ERROR: '+$_.Exception.Message) -ForegroundColor Red }"
 echo.
 if not defined SILENT pause
 exit /b

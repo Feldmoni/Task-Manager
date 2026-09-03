@@ -60,10 +60,10 @@ installer/                        מקורות ההתקנה
   התקן.bat                        הרצה → מתקין (דורש את התיקייה)
   הסר התקנה.bat                   הרצה → מסיר
   install_journal.ps1             לוגיקת ההתקנה
-  icon.ico                        אייקון האפליקציה
+  app-icon.ico                    אייקון האפליקציה
   הוראות.txt                      הסבר למשתמש
 scripts/build-installer.ps1       בונה את dist/Task-Manager-Setup.bat
-scripts/make-icon.ps1             בונה את installer/icon.ico (וי לבן על רקע כחול)
+scripts/make-icon.ps1             בונה את installer/app-icon.ico (וי לבן על רקע כחול)
 scripts/update-windows-app.ps1    עדכון אפליקציית ה-Windows לגרסה שבריפו
 archive/task-manager-simple.html  גרסה מוקדמת ומצומצמת יותר (לא בשימוש)
 ```
@@ -78,7 +78,7 @@ archive/task-manager-simple.html  גרסה מוקדמת ומצומצמת יות�
 | התקנה רגילה | לחיצה כפולה |
 | התקנה שקטה | `Task-Manager-Setup.bat /silent` |
 
-**איך זה עובד:** `index.html`, `icon.ico` ו-`install_journal.ps1` מקודדים ב-Base64
+**איך זה עובד:** `index.html`, `app-icon.ico` ו-`install_journal.ps1` מקודדים ב-Base64
 ומוטמעים בסוף קובץ ה-bat. ה-bat מחלץ אותם ל-`%TEMP%`, מריץ את ההתקנה ומנקה אחריו.
 
 > למה Base64: קובץ `.bat` נקרא ע"י cmd.exe בקידוד ה-OEM של המחשב (862 / 437 / 1255,

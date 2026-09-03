@@ -24,10 +24,10 @@ try {
               Where-Object { Test-Path $_ } | Select-Object -First 1
   if (-not $srcIndex) { throw 'index.html לא נמצא.' }
   Copy-Item $srcIndex $dir -Force
-  Copy-Item (Join-Path $srcRoot 'icon.ico')   $dir -Force
+  Copy-Item (Join-Path $srcRoot 'app-icon.ico')   $dir -Force
 
   $indexUrl = 'file:///' + (($dir -replace '\\','/')) + '/index.html'
-  $icon = Join-Path $dir 'icon.ico'
+  $icon = Join-Path $dir 'app-icon.ico'
   $args = '--app="' + $indexUrl + '" --user-data-dir="' + $data + '"'
 
   $ws = New-Object -ComObject WScript.Shell

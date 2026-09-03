@@ -13,7 +13,7 @@ $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Drawing
 
 $repo = Split-Path -Parent $PSScriptRoot
-$out  = Join-Path $repo 'installer\icon.ico'
+$out  = Join-Path $repo 'installer\app-icon.ico'
 
 $BG   = [System.Drawing.ColorTranslator]::FromHtml('#1f4e78')  # כחול האפליקציה
 $FG   = [System.Drawing.Color]::White
