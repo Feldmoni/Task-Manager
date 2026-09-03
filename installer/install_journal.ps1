@@ -1,4 +1,7 @@
 ﻿# יומן משימות אישי — התקנה כאפליקציית Edge (ללא הרשאות מנהל, ללא קבצי exe)
+# -Silent : התקנה ללא תיבת דו-שיח בסוף (לבדיקות אוטומטיות)
+param([switch]$Silent)
+
 Add-Type -AssemblyName System.Windows.Forms -ErrorAction SilentlyContinue | Out-Null
 $ErrorActionPreference = 'Stop'
 $APP = 'יומן משימות אישי'
@@ -70,7 +73,7 @@ Start-Process powershell -ArgumentList '-NoProfile','-WindowStyle','Hidden','-Ex
   Set-ItemProperty $rk 'NoRepair' 1
   Set-ItemProperty $rk 'UninstallString' ('powershell.exe -NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File "' + $uninPath + '"')
 
-  if ([System.Windows.Forms.MessageBox]) {
+  if (-not $Silent -and ('System.Windows.Forms.MessageBox' -as [type])) {
     $r = [System.Windows.Forms.MessageBox]::Show("""$APP"" הותקן בהצלחה!`n`nנוצרו קיצורים בתפריט Start ובשולחן העבודה.`nלהפעיל עכשיו?", $APP, 'YesNo', 'Information')
     if ($r -eq 'Yes') { Start-Process $edge -ArgumentList $args }
   }

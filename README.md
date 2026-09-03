@@ -55,14 +55,39 @@ powershell -ExecutionPolicy Bypass -File .\scripts\update-windows-app.ps1
 
 ```
 index.html                        האפליקציה — הכל בקובץ אחד (HTML + CSS + JS)
-installer/                        התקנה כאפליקציית Windows (Edge --app)
-  התקן.bat                        הרצה → מתקין
+dist/Task-Manager-Setup.bat       ⭐ קובץ התקנה יחיד ועצמאי (מוכן להעברה)
+installer/                        מקורות ההתקנה
+  התקן.bat                        הרצה → מתקין (דורש את התיקייה)
   הסר התקנה.bat                   הרצה → מסיר
-  install_journal.ps1             לוגיקת ההתקנה (לוקח את index.html מהשורש)
+  install_journal.ps1             לוגיקת ההתקנה
   icon.ico                        אייקון האפליקציה
   הוראות.txt                      הסבר למשתמש
+scripts/build-installer.ps1       בונה את dist/Task-Manager-Setup.bat
 scripts/update-windows-app.ps1    עדכון אפליקציית ה-Windows לגרסה שבריפו
 archive/task-manager-simple.html  גרסה מוקדמת ומצומצמת יותר (לא בשימוש)
+```
+
+### קובץ התקנה יחיד ⭐
+
+`dist\Task-Manager-Setup.bat` — **קובץ אחד, ~70KB, בלי תלויות ובלי אינטרנט.**
+מעתיקים ל-USB או שולחים במייל, לחיצה כפולה על מחשב היעד, וזהו.
+
+| | |
+|---|---|
+| התקנה רגילה | לחיצה כפולה |
+| התקנה שקטה | `Task-Manager-Setup.bat /silent` |
+
+**איך זה עובד:** `index.html`, `icon.ico` ו-`install_journal.ps1` מקודדים ב-Base64
+ומוטמעים בסוף קובץ ה-bat. ה-bat מחלץ אותם ל-`%TEMP%`, מריץ את ההתקנה ומנקה אחריו.
+
+> למה Base64: קובץ `.bat` נקרא ע"י cmd.exe בקידוד ה-OEM של המחשב (862 / 437 / 1255,
+> תלוי מכונה) — עברית היתה נשברת במחשב אחר. Base64 הוא ASCII טהור ולכן חסין לקידוד.
+> מסיבה זו ה-bat עצמו כתוב אנגלית בלבד, וכל העברית יושבת בתוך המטען המוטמע.
+
+**לבנייה מחדש אחרי כל שינוי ב-`index.html`:**
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\build-installer.ps1
 ```
 
 ### התקנה על מחשב חדש
