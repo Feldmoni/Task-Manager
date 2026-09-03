@@ -234,7 +234,31 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4f8;color:#111;paddi
 <script>
 var state={tasks:[]},currentF='open',selectedCat='עבודה',selectedSub='הנהלה',selectedDue=null,pendingDeleteId=null,editingId=null,editCat='עבודה',editStatus='פתוחה',editConsult='לא';
 var SUB_OPTIONS={'עבודה':[{label:'🏢 הנהלה',value:'הנהלה'},{label:'⚙️ תפעול',value:'תפעול'},{label:'📣 שיווק',value:'שיווק'}],'בית':[{label:'🏠 כללי',value:'כללי'},{label:'🎨 תחביבים',value:'תחביבים'}]};
-function persist(){try{localStorage.setItem('taskJournal',JSON.stringify(state))}catch(e){}}
+// שמירה אוטומטית. נקראת מכל פעולה שמשנה משימה - הוספה, עריכה,
+// סימון בוצע, החזרה ומחיקה. אין צורך ללחוץ על "שמור".
+function persist(){
+  try{
+    localStorage.setItem('taskJournal',JSON.stringify(state));
+    markSaved();
+  }catch(e){
+    // בעבר נבלעה כאן השגיאה בשקט והמשתמש היה מאבד נתונים בלי לדעת
+    setFileBar('השמירה נכשלה! '+e.message+' — מומלץ ללחוץ 🗄 גיבוי','warn');
+    showToast('⚠ השמירה נכשלה — הנתונים לא נשמרו',true);
+  }
+}
+// חיווי ויזואלי שהשמירה קרתה, כדי שלא צריך לנחש
+function markSaved(){
+  var now=new Date().toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  var lu=document.getElementById('last-update');
+  if(lu)lu.textContent='נשמר אוטומטית '+now;
+  setFileBar('נשמר אוטומטית · '+state.tasks.length+' משימות','ok');
+  var btn=document.getElementById('save-btn');
+  if(btn){
+    btn.className='hbtn saved';btn.textContent='✅ נשמר';
+    clearTimeout(btn._t);
+    btn._t=setTimeout(function(){btn.className='hbtn';btn.textContent='💾 שמור'},2000);
+  }
+}
 function toISO(d){var m=d.getMonth()+1,day=d.getDate();return d.getFullYear()+'-'+(m<10?'0':'')+m+'-'+(day<10?'0':'')+day}
 function getToday(){return toISO(new Date())}
 function addDays(n){var d=new Date();d.setDate(d.getDate()+n);return toISO(d)}

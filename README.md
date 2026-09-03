@@ -63,6 +63,7 @@ installer/                        מקורות ההתקנה
   icon.ico                        אייקון האפליקציה
   הוראות.txt                      הסבר למשתמש
 scripts/build-installer.ps1       בונה את dist/Task-Manager-Setup.bat
+scripts/make-icon.ps1             בונה את installer/icon.ico (וי לבן על רקע כחול)
 scripts/update-windows-app.ps1    עדכון אפליקציית ה-Windows לגרסה שבריפו
 archive/task-manager-simple.html  גרסה מוקדמת ומצומצמת יותר (לא בשימוש)
 ```
