@@ -83,12 +83,15 @@ function ConvertTo-Png([System.Drawing.Bitmap]$bmp) {
 }
 
 # ── הרכבת קובץ ה-ico ─────────────────────────────────────────────────────
-$sizes  = @(16, 32, 48, 64, 256)
+# כל הפריימים כ-DIB, בלי PNG בכלל. פריים דחוס-PNG נתמך רשמית מוינדוס
+# ויסטה, אבל בפועל חלק מנתיבי הרינדור של Explorer לא מציגים אותו ואז
+# מוצג אייקון דף ריק. DIB עובד בכל מקום.
+# 256 הושמט בכוונה: כ-DIB הוא לבדו שוקל 270KB. וינדוס מגדיל את 128 בעת הצורך.
+$sizes  = @(16, 32, 48, 64, 128)
 $frames = @()
 foreach ($s in $sizes) {
     $bmp = New-Frame $s
-    $data = if ($s -ge 256) { ConvertTo-Png $bmp } else { ConvertTo-Dib $bmp }
-    $frames += ,@{ Size = $s; Data = $data; Bmp = $bmp }
+    $frames += ,@{ Size = $s; Data = (ConvertTo-Dib $bmp); Bmp = $bmp }
 }
 
 $ms = New-Object System.IO.MemoryStream
