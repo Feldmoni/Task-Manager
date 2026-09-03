@@ -60,13 +60,18 @@ function ConvertTo-Dib([System.Drawing.Bitmap]$bmp) {
     $bw.Write([uint16]1);  $bw.Write([uint16]32); $bw.Write([uint32]0)
     $bw.Write([uint32]($w*$h*4)); $bw.Write([int32]0); $bw.Write([int32]0)
     $bw.Write([uint32]0); $bw.Write([uint32]0)
-    # פיקסלים BGRA, שורות מלמטה למעלה
-    for ($y = $h-1; $y -ge 0; $y--) {
-        for ($x = 0; $x -lt $w; $x++) {
-            $c = $bmp.GetPixel($x, $y)
-            $bw.Write([byte]$c.B); $bw.Write([byte]$c.G); $bw.Write([byte]$c.R); $bw.Write([byte]$c.A)
-        }
-    }
+    # פיקסלים BGRA, שורות מלמטה למעלה.
+    # LockBits ולא GetPixel: עבור פריים 256 מדובר ב-65,536 פיקסלים,
+    # ו-GetPixel אחד-אחד לוקח דקות ב-PowerShell.
+    $rect = New-Object System.Drawing.Rectangle(0, 0, $w, $h)
+    $bd = $bmp.LockBits($rect, [System.Drawing.Imaging.ImageLockMode]::ReadOnly,
+                        [System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
+    $stride = $bd.Stride
+    $buf = New-Object byte[] ($stride * $h)
+    [System.Runtime.InteropServices.Marshal]::Copy($bd.Scan0, $buf, 0, $buf.Length)
+    $bmp.UnlockBits($bd)
+    # Format32bppArgb בזיכרון הוא כבר B,G,R,A - בדיוק הסדר ש-DIB מצפה לו
+    for ($y = $h-1; $y -ge 0; $y--) { $bw.Write($buf, $y * $stride, $w * 4) }
     # מסכת AND - אפסים; שקיפות מגיעה מערוץ האלפא
     $rowBytes = [int][Math]::Floor(($w + 31) / 32) * 4
     $bw.Write((New-Object byte[] ($rowBytes * $h)))
@@ -84,10 +89,13 @@ function ConvertTo-Png([System.Drawing.Bitmap]$bmp) {
 
 # ── הרכבת קובץ ה-ico ─────────────────────────────────────────────────────
 # כל הפריימים כ-DIB, בלי PNG בכלל. פריים דחוס-PNG נתמך רשמית מוינדוס
-# ויסטה, אבל בפועל חלק מנתיבי הרינדור של Explorer לא מציגים אותו ואז
-# מוצג אייקון דף ריק. DIB עובד בכל מקום.
-# 256 הושמט בכוונה: כ-DIB הוא לבדו שוקל 270KB. וינדוס מגדיל את 128 בעת הצורך.
-$sizes  = @(16, 32, 48, 64, 128)
+# ויסטה, אבל בפועל חלק מנתיבי הרינדור של Explorer לא מפענחים אותו.
+#
+# 256 חובה, גם אם הוא שוקל 270KB. שולחן העבודה במצב "אייקונים גדולים"
+# מושך מרשימת התמונות JUMBO; בלי פריים 256 וינדוס *לא* מגדיל את 128
+# אלא מניח את האייקון הקטן בפינה של קנבס 256 ריק - ועל המסך זה
+# נראה כאילו אין אייקון בכלל. זה מה שקרה כאן.
+$sizes  = @(16, 32, 48, 64, 128, 256)
 $frames = @()
 foreach ($s in $sizes) {
     $bmp = New-Frame $s
@@ -122,6 +130,6 @@ foreach ($f in $frames) {
 
 Write-Host ""
 Write-Host "  נבנה: $out  ($([Math]::Round((Get-Item $out).Length/1KB,1)) KB)" -ForegroundColor Green
-foreach ($f in $frames) { Write-Host ("    {0,3}x{1,-3} {2,7} bytes  {3}" -f $f.Size, $f.Size, $f.Data.Length, $(if($f.Size -ge 256){'PNG'}else{'DIB'})) -ForegroundColor Gray }
+foreach ($f in $frames) { Write-Host ("    {0,3}x{1,-3} {2,7} bytes  DIB" -f $f.Size, $f.Size, $f.Data.Length) -ForegroundColor Gray }
 Write-Host "  תצוגות: $prev" -ForegroundColor Gray
 Write-Host ""
