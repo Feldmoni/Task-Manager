@@ -31,12 +31,13 @@ try {
   $args = '--app="' + $indexUrl + '" --user-data-dir="' + $data + '"'
 
   $ws = New-Object -ComObject WScript.Shell
-  # שני שמות: עברית (יומן) ואנגלית (Task-Manager) - כדי שחיפוש בתפריט Start ימצא בשתי השפות
+  # תפריט Start מקבל את שני השמות כדי שחיפוש יעבוד בעברית ובאנגלית.
+  # שולחן העבודה מקבל רק אחד - שני אייקונים לאותה אפליקציה הם רק בלגן.
   $lnkPaths = @()
   foreach ($n in @($APP, 'Task-Manager')) {
     $lnkPaths += Join-Path $env:APPDATA "Microsoft\Windows\Start Menu\Programs\$n.lnk"
-    $lnkPaths += Join-Path ([Environment]::GetFolderPath('Desktop')) "$n.lnk"
   }
+  $lnkPaths += Join-Path ([Environment]::GetFolderPath('Desktop')) 'Task-Manager.lnk'
   foreach ($t in $lnkPaths) {
     $lnk = $ws.CreateShortcut($t)
     $lnk.TargetPath = $edge
