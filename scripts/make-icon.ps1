@@ -18,12 +18,29 @@ $out  = Join-Path $repo 'installer\app-icon.ico'
 $BG   = [System.Drawing.ColorTranslator]::FromHtml('#1f4e78')  # כחול האפליקציה
 $FG   = [System.Drawing.Color]::White
 
-function New-Frame([int]$s) {
+function New-Frame([int]$s, [switch]$FullBleed) {
     $bmp = New-Object System.Drawing.Bitmap($s, $s, [System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
     $g   = [System.Drawing.Graphics]::FromImage($bmp)
     $g.SmoothingMode     = 'AntiAlias'
     $g.InterpolationMode = 'HighQualityBicubic'
     $g.Clear([System.Drawing.Color]::Transparent)
+
+    # FullBleed משמש לאייקון maskable: מערכת ההפעלה חותכת אותו בעצמה
+    # לצורה שהיא בוחרת (עיגול, ריבוע מעוגל), ולכן אסור שיהיו שוליים.
+    if ($FullBleed) {
+        $gb = New-Object System.Drawing.SolidBrush($BG)
+        $g.FillRectangle($gb, 0, 0, $s, $s)
+        $gb.Dispose()
+        $pen2 = New-Object System.Drawing.Pen($FG, [float]([Math]::Max(1.6, $s * 0.09)))
+        $pen2.StartCap = 'Round'; $pen2.EndCap = 'Round'; $pen2.LineJoin = 'Round'
+        # הוי מוקטן כדי להישאר באזור הבטוח (80% מרכזיים)
+        $g.DrawLines($pen2, @(
+            (New-Object System.Drawing.PointF([float]($s*0.32), [float]($s*0.52))),
+            (New-Object System.Drawing.PointF([float]($s*0.45), [float]($s*0.65))),
+            (New-Object System.Drawing.PointF([float]($s*0.69), [float]($s*0.37)))))
+        $pen2.Dispose(); $g.Dispose()
+        return $bmp
+    }
 
     # ריבוע מעוגל במילוי מלא
     $m = [Math]::Max(1, [int]($s * 0.06))          # שוליים
@@ -127,6 +144,23 @@ foreach ($f in $frames) {
     $f.Bmp.Save((Join-Path $prev ("icon-{0}.png" -f $f.Size)), [System.Drawing.Imaging.ImageFormat]::Png)
     $f.Bmp.Dispose()
 }
+
+# ── אייקוני PWA ─────────────────────────────────────────────────────────
+# נדרשים כדי ש-Edge יציע "התקן אתר זה כאפליקציה". 192 ו-512 הם הגדלים
+# שהתקן דורש; ה-maskable הוא לאנדרואיד, שחותך את האייקון לצורה משלו.
+$iconDir = Join-Path $repo 'icons'
+New-Item -ItemType Directory -Force $iconDir | Out-Null
+$pngs = @()
+foreach ($s in 192, 512) {
+    $b = New-Frame $s
+    $p = Join-Path $iconDir "icon-$s.png"
+    $b.Save($p, [System.Drawing.Imaging.ImageFormat]::Png); $b.Dispose()
+    $pngs += $p
+}
+$b = New-Frame 512 -FullBleed
+$p = Join-Path $iconDir 'icon-maskable-512.png'
+$b.Save($p, [System.Drawing.Imaging.ImageFormat]::Png); $b.Dispose()
+$pngs += $p
 
 Write-Host ""
 Write-Host "  נבנה: $out  ($([Math]::Round((Get-Item $out).Length/1KB,1)) KB)" -ForegroundColor Green
